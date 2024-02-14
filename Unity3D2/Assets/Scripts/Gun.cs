@@ -6,13 +6,23 @@ public class Gun : MonoBehaviour
 {
     [SerializeField] GameObject objHitHole; //프리팹
     [SerializeField] Transform trsTarget;
-
+    [SerializeField] Light hitLight;
+    [SerializeField] Light muzzleLight;
     short shootCount;
-    
+    LineRenderer lineRenderer;
+    [SerializeField] Transform trsMuzzle;
+    private void Start()
+    {
+        lineRenderer = GetComponent<LineRenderer>();
+        beforeShooting();        
+        trsMuzzle = transform.GetChild(1); //Find(0);
+    }
     void Update()
     {
         lookTarget();
         shootTarget();
+        linePos();
+
     }
 
     private void lookTarget()
@@ -21,6 +31,7 @@ public class Gun : MonoBehaviour
 
         transform.LookAt(trsTarget);
     }
+
 
     private void shootTarget()
     {
@@ -31,6 +42,13 @@ public class Gun : MonoBehaviour
         }
     }
 
+    private void linePos()
+    {
+        if (lineRenderer.enabled == true)
+        {
+            lineRenderer.SetPosition(0, trsMuzzle.position);
+        }
+    }
     private void createHole(RaycastHit _hit)
     {
         GameObject obj = Instantiate(objHitHole, _hit.point + _hit.normal * 0.0001f,
@@ -43,5 +61,23 @@ public class Gun : MonoBehaviour
         {
             shootCount = 0;
         }
+
+        
+        lineRenderer.SetPosition(1, _hit.point);
+
+        //노멀데이터는 기본적으로 1의 데이터를 갖는다.
+        hitLight.transform.position = _hit.point + _hit.normal * 0.2f;
+        hitLight.gameObject.SetActive(true);
+        muzzleLight.gameObject.SetActive(true);
+        lineRenderer.enabled = true;
+
+        Invoke("beforeShooting",0.1f);
+    }
+
+    private void beforeShooting()
+    {
+        hitLight.gameObject.SetActive(false);
+        muzzleLight.gameObject.SetActive(false);
+        lineRenderer.enabled = false;
     }
 }
