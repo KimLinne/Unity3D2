@@ -5,19 +5,32 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     Camera mainCam;
+    UnitManager unitManager;
 
     private void Start()
     {
         mainCam = Camera.main;
+        unitManager = UnitManager.Instance;
     }
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
-            Vector3 mousePos = Input.mousePosition;
-            mousePos.z = -mainCam.transform.position.z;
+            //Z 포지션 위치를 고정.
+            //Vector3 mousePos = Input.mousePosition;
+            //mousePos.z = -mainCam.transform.position.z;
 
-            mainCam.ScreenToWorldPoint(mousePos);
+            //Vector3 worldPoint = mainCam.ScreenToWorldPoint(mousePos);
+            //Debug.Log(mousePos);
+
+
+            //레이를 쏜다.
+            Ray ray = mainCam.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                //UnitManager.Instance.MovePosition(hit.point); 를 start와 최상단에 인지 시켜 아래 문으로 줄일 수 있다.
+                unitManager.MovePosition(hit.point);
+            }
 
         }
     }

@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     Vector3 vecDestination; //디폴트 
     Vector3 startPosition;
     [SerializeField] float randomRadiusRange = 30f; //반지름
+    [SerializeField] bool selected = false;
 
     float waitingTime; //도착 후에 잠깐 기다리는 시간
     [SerializeField] Vector2 vecWaitingMinMax;
@@ -29,23 +30,42 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        ////1.동적으로 플레이 중에 알고리즘에 의해서 삭제.
+        //UnitManager.Instance.RemoveUnit(this);
+
+        //2.어떤 조건에 의해서 데이터가 삭제되어야할 때.(예. 에디터에서 플레이가 끝났을 때, 플레이 중 만들어진 데이터는 삭제된다.)
+
+        if (UnitManager.Instance != null) //null이 아니라면.
+        {
+            UnitManager.Instance.RemoveUnit(this);
+        }
+    }
+
     private void Start()
     {
         //setNewPath(); 한번은 자동으로 이동하도록.
         //setNewWaitTime(); 
+
+        if (selected == false) return;
+
+        UnitManager.Instance.AddUnit(this);
     }
+
+
 
     void Update()
     {
-        if (isArrive() == true) //새로운 이동 위치를 잡아줘야함,
-                                //if (checkWaitTime() == true) return; 문장을 위 isArrive() == true 옆에 넣는 방법도 있으니 
-                                //작업해볼 것.
-        {
-            if (checkWaitTime() == true) return;
-            setNewPath();
+        //if (isArrive() == true) //새로운 이동 위치를 잡아줘야함,
+        //                        //if (checkWaitTime() == true) return; 문장을 위 isArrive() == true 옆에 넣는 방법도 있으니 
+        //                        //작업해볼 것.
+        //{
+        //    if (checkWaitTime() == true) return;
+        //    setNewPath();
 
-            //agent.SetDestination(getRandomPoint());
-        }
+        //    //agent.SetDestination(getRandomPoint());
+        //}
     }
 
     private void setNewWaitTime()
@@ -104,7 +124,7 @@ public class Player : MonoBehaviour
     /// </summary>
     /// <returns></returns>
     private Vector3 getRandomPoint()
-    {
+    {                       //플레이어의 포지션 + 랜덤, 유닛을 중심으로 구형 범위 * 범위 지정
         Vector3 randomPoint = transform.position + Random.insideUnitSphere * randomRadiusRange;
 
         if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, randomRadiusRange,
@@ -116,5 +136,9 @@ public class Player : MonoBehaviour
         return startPosition;
     }
 
+    public void SetDestination(Vector3 _pos)
+    {
+        agent.SetDestination(_pos);
+    }
 
 }
