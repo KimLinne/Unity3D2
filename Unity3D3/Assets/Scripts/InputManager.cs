@@ -26,7 +26,7 @@ public class InputManager : MonoBehaviour
 
             //레이를 쏜다.
             Ray ray = mainCam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            if (Physics.Raycast(ray, out RaycastHit hit, 200.0f, LayerMask.GetMask("Ground")))
             {
                 //UnitManager.Instance.MovePosition(hit.point); 를 start와 최상단에 인지 시켜 아래 문으로 줄일 수 있다.
                 unitManager.MovePosition(hit.point);
