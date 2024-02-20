@@ -24,6 +24,37 @@ public class Player : MonoBehaviour
     Vector3 offMeshStart;
     Vector3 offMeshEnd;
 
+    Material matUnit; // 클릭 되었는지 확인용 메테리얼.
+
+
+
+    //데이터를 퍼블릭과 같이 사용이 가능하되 외부로 유출되지 않음.
+    private bool select = false;
+    public bool Select
+    {
+        set 
+        {
+            select = value;
+            if (matUnit != null)
+            {
+                if (select == true)
+                {
+                    matUnit.color = Color.green;
+                }
+                else
+                {
+                    matUnit.color = Color.white;
+                }
+            }
+        }
+
+        get 
+        {
+            return select;
+        }
+    }
+
+
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -41,6 +72,12 @@ public class Player : MonoBehaviour
         //NavMesh.RemoveAllNavMeshData();//나브메쉬를 삭제 코드로도 가능.
         //NavMeshSurface surface = GetComponent<NavMeshSurface>();
         //surface.BuildNavMesh();
+
+        MeshRenderer mr = GetComponent<MeshRenderer>();
+        matUnit = Instantiate(mr.material); //각 메테리얼을 인스턴트로 만들어 개체에 클론으로 들어가게 한다.
+        mr.material = matUnit;
+
+
     }
 
     private void OnDestroy()

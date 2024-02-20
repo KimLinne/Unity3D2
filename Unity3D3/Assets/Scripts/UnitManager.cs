@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -41,7 +42,10 @@ public class UnitManager : MonoBehaviour
         for (int iNum = 0; iNum < count; ++iNum)
         {
             Player unit = listPlayer[iNum];
-            unit.SetDestination(pos);
+            if (unit.Select == true)
+            {
+                unit.SetDestination(pos);
+            }
         }
 
         //혹은 foreach 문 사용.
@@ -50,5 +54,29 @@ public class UnitManager : MonoBehaviour
         //{
         //    unit.SetDestination(pos);
         //}
+    }
+
+    public void ClearAllSelectUnit()
+    {
+        int count = listPlayer.Count;
+        for (int iNum = 0; iNum < count; ++iNum)
+        {
+            Player sc = listPlayer[iNum];
+            sc.Select = false;
+        }
+    }
+
+    public void SelectUnit(Rect _rect)
+    {
+        int count = listPlayer.Count;
+        for (int iNum = 0; iNum < count; ++iNum)
+        {
+            Player unit = listPlayer[iNum];
+            if (_rect.Contains(Camera.main.WorldToScreenPoint(unit.transform.position)) == true) 
+                // Contains // rect에게 그 안에 포함되어 있는지 묻는다.
+            {
+                unit.Select = true; 
+            }
+        }
     }
 }
