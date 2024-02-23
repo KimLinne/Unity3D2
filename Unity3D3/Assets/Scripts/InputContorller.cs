@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InputContorller : MonoBehaviour
 {
@@ -11,28 +14,87 @@ public class InputContorller : MonoBehaviour
     [SerializeField, Range(0.0f, 1.0f)] float lookAtWeight; // 쳐다보지 않거나, 쳐다보거나. NPC와의 대화 기능에 주요.
 
     List<string> listDanceStateName = new List<string>();
+
+    [SerializeField] GameObject objInven;
+    [SerializeField] GameObject objButton;
+
+    Dictionary<string, string> dicNameValue = new Dictionary<string,string>();
+
+    [SerializeField, Range(0.0f, 1.0f)] float distanceToGround;
+
     private void OnAnimatorIK(int layerIndex) //파란색으로 나오는 건 유니티에서 실행시켜주는 기능이다.
     {
-        if(trsLookAt != null)
+        if (trsLookAt != null)
         {
-            anim.SetLookAtWeight(lookAtWeight);
+            anim.SetLookAtWeight(lookAtWeight);         //이 형태는 부하가 있음.
             anim.SetLookAtPosition(trsLookAt.position); //trsLookAt 에 해당되는 특정 개체를 바라보게 한다.
                                                         //다른 애니메이션 중에도 바라보게 된다.
 
         }
-        
+
+        anim.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
+        anim.SetIKPositionWeight(AvatarIKGoal.RightFoot, 1);
+
+        anim.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);
+        anim.SetIKRotationWeight(AvatarIKGoal.RightFoot, 1);
+
+        if (Physics.Raycast(anim.GetIKPosition(AvatarIKGoal.LeftFoot)+ Vector3.up , 
+            Vector3.down, 
+            out RaycastHit leftHit,
+            distanceToGround + 1f, LayerMask.GetMask("Ground")))
+        {
+            Vector3 footPos = leftHit.point;
+            footPos.y += distanceToGround;
+
+            anim.SetIKPosition(AvatarIKGoal.LeftFoot, footPos);
+
+            anim.SetIKRotation(AvatarIKGoal.LeftFoot, 
+                Quaternion.LookRotation(
+                    Vector3.ProjectOnPlane(transform.forward, leftHit.normal), leftHit.normal
+                    ));
+        }
+
+        if (Physics.Raycast(anim.GetIKPosition(AvatarIKGoal.RightFoot) + Vector3.up,
+            Vector3.down,
+            out RaycastHit rightHit,
+            distanceToGround + 1f, LayerMask.GetMask("Ground")))
+        {
+            Vector3 footPos = rightHit.point;
+            footPos.y += distanceToGround;
+
+            anim.SetIKPosition(AvatarIKGoal.RightFoot, footPos);
+
+            anim.SetIKRotation(AvatarIKGoal.RightFoot,
+                Quaternion.LookRotation(
+                    Vector3.ProjectOnPlane(transform.forward, rightHit.normal), rightHit.normal
+                    ));
+        }
+
+
+
     }
 
     private void Awake()
     {
         anim = GetComponent<Animator>();
+
+        dicNameValue.Add("Dance_1", "어떤춤");
+        dicNameValue.Add("Dance_2", "어떤 어떤춤");
+        dicNameValue.Add("Dance_3", "잘 모르겠는춤");
+
     }
 
     void Start()
     {
-        AnimationClip[] clips = anim.runtimeAnimatorController.animationClips; // 애니메이션 클립을 꺼낸다.
-        
-        //다음 시간에는 버튼 사용.
+        //*AnimationClip[] clips = anim.runtimeAnimatorController.animationClips;*/ // 애니메이터에게 실제 작동중인
+                                                                                   // 애니메이션 컨트롤러에게 묻는다.
+
+
+        initDance();
+        createDanceUi(); 
+
+
+        //버튼 만들어지는 시스템 만들 것.
     }
 
     
@@ -40,7 +102,10 @@ public class InputContorller : MonoBehaviour
     {
         moving();
         doDance();
+        activeDanceInventory();
         
+
+
     }
 
     private void moving()
@@ -57,6 +122,57 @@ public class InputContorller : MonoBehaviour
         //anim.SetBool("Left", Input.GetKey(KeyCode.A));
     }
 
+    private void activeDanceInventory()
+    {
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            bool isActive = objInven.activeSelf; //켜져 있는지 꺼져있는지 확인하며 데이터를 보내줌.
+
+            objInven.gameObject.SetActive(!isActive); // 데이터가 트루라면 false로, false라면 true로.
+            
+        }
+    }
+
+    private void initDance()
+    {
+        AnimationClip[] clips = anim.runtimeAnimatorController.animationClips; //Dance_
+        int count = clips.Length;
+        for (int iNum = 0; iNum < count; ++iNum)
+        {
+            string animName = clips[iNum].name;
+            if (animName.Contains("Dance_")) //Dance_ 가 적혀있다면 
+            {
+                listDanceStateName.Add(animName); 
+            }
+        }
+    }
+
+    private void createDanceUi()
+    {
+        Transform parent = objInven.transform;
+        int count = listDanceStateName.Count;
+        for(int iNum = 0; iNum < count; ++iNum)
+        {
+            int Number = iNum;
+            //버튼 이름, 기능 변경.
+             GameObject obj = Instantiate(objButton, parent);
+
+            TMP_Text objText = obj.GetComponentInChildren<TMP_Text>();
+            string curName = listDanceStateName[Number];
+            objText.text = dicNameValue[curName];
+
+            Button objBtn = obj.GetComponent<Button>();
+            objBtn.onClick.AddListener(() =>
+            {
+                anim.CrossFade(listDanceStateName[Number], 0.1f);
+            });
+            //람다식 사용 시에는 동적 변화하는 지역변수를 넣어선 안된다. [iNum]을 그대로 전달하지 말고
+            //int Number = iNum; 으로 지정 해줘야 한다.
+
+                
+        }
+
+    }
     private void doDance()
 
     {
