@@ -1,0 +1,160 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+public class DayNightManager : MonoBehaviour
+{
+
+    private Light directionalLight;
+    [SerializeField,Range(0f,24f)] private float timeOfDay;
+
+    public bool isNight = false;
+    private string keyIsNight = "isNight";
+    public bool AutoChange = false; // 자동 낮밤 변경.
+
+    [SerializeField,Range(0f,24f)] float dayTime = 14;
+    [SerializeField, Range(0f, 24f)] float nightTime = 23;
+
+    List<FunctionLight> listLights = new List<FunctionLight>();
+
+    private void OnApplicationQuit() //어플이 꺼질 때 작
+    {
+        string value = isNight == true ? "t" : "f";
+        PlayerPrefs.SetString(keyIsNight, value);
+    }
+
+    private void Awake()
+    {
+        string value = PlayerPrefs.GetString(keyIsNight, "f");
+        isNight = value == "t" ? true : false; // t라면 true를 아니라면 false를.
+
+        if (directionalLight == null)
+        {
+            Light[] lights = GameObject.FindObjectsOfType<Light>();
+            int count = lights.Length;
+            for (int iNum = 0; iNum < count; ++iNum)
+            {
+                Light light = lights[iNum];
+                if (light.type == LightType.Directional)
+                {
+                    directionalLight = light;
+                }
+                else 
+                {
+                    listLights.Add(light.transform.parent.GetComponent<FunctionLight>());
+
+                }
+            }
+            count = listLights.Count;
+            for (int iNum = 0; iNum < count; ++iNum)
+            {
+                FunctionLight light = listLights[iNum];
+                light.init(isNight);
+            }
+
+        }
+
+    }
+
+    void Start()
+    {
+        
+    }
+
+   
+    void Update()
+    {
+        timeOfDay %= 24; //0~24 사이의 값만 저장
+        if (AutoChange == true)
+        {
+            timeOfDay += Time.deltaTime; // 시간이 자동으로 증가
+
+            if (timeOfDay > dayTime)
+            {
+                isNight = true;
+            }
+            else if (timeOfDay > nightTime)
+            {
+                isNight = false;
+            }
+                       
+        }
+
+        else //시간을 직접 관리
+        {
+            if (isNight == true )
+            {
+                timeOfDay += Time.deltaTime;
+                if (timeOfDay > nightTime)
+                {
+                    timeOfDay = nightTime;
+                } // 밤으로 지정
+                               
+            }
+            else
+            {
+                timeOfDay += Time.deltaTime;
+                if (timeOfDay < nightTime && timeOfDay > dayTime) //두가지 조건 전부 충족 시에.
+                {
+                    timeOfDay = dayTime;
+                }// 낮
+            }
+
+            
+
+        }
+
+        if (timeOfDay > 23.1f)
+        {
+            timeOfDay = 4;
+        }
+
+        updateLighting();
+    }
+
+    private void updateLighting()
+    {
+        if (directionalLight == null) 
+        {
+            Debug.LogError("게임에 디렉셔널 라이트가 존재하지 않습니다.");
+            return;
+        }
+        
+        float timePercent = timeOfDay / 24f; //0~1
+        directionalLight.transform.localRotation = Quaternion.Euler(new Vector3(timePercent * 360f -90f, 150f,0f));
+
+        if (directionalLight.transform.eulerAngles.x >= 180f && directionalLight.color.r > 0.0f) //night
+        {
+            
+                directionalLight.color -= new Color(1, 1, 1) * Time.deltaTime * 10.0f;
+                if (directionalLight.color.r < 0.0f)
+                {
+                    directionalLight.color = new Color(0, 0, 0);
+
+                    foreach (FunctionLight light in listLights)
+                    {
+                        light.TurnOnLight(true);
+                    }
+                }
+                      
+
+        }
+        else if (directionalLight.transform.localRotation.x >= 0.0f && directionalLight.color.r < 1.0f) //day
+        {
+            
+                directionalLight.color += new Color(1, 1, 1) * Time.deltaTime * 10f;
+                if (directionalLight.color.r > 1.0f)
+                {
+                    directionalLight.color = new Color(1, 1, 1);
+
+                    foreach (FunctionLight light in listLights)
+                    {
+                        light.TurnOnLight(false);
+                    }
+                }
+            
+
+        }
+    }
+}

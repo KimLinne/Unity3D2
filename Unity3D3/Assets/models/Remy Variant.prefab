@@ -70,6 +70,9 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: efe9d884e2c00f3408ec3162c17208f6, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 1331637688820943921}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: efe9d884e2c00f3408ec3162c17208f6, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 4824473546259772769}
   m_SourcePrefab: {fileID: 100100000, guid: efe9d884e2c00f3408ec3162c17208f6, type: 3}
 --- !u!1 &7776338373392130653 stripped
@@ -77,6 +80,23 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: efe9d884e2c00f3408ec3162c17208f6, type: 3}
   m_PrefabInstance: {fileID: 7433880979729276684}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1331637688820943921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7776338373392130653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fa58868adfa5004ba4760f775b87847, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trsLookAt: {fileID: 0}
+  lookAtWeight: 0
+  objInven: {fileID: 0}
+  objButton: {fileID: 2811858650584936802, guid: a7ba9a77aeb2bcd4d94446af46ce0161, type: 3}
+  distanceToGround: 0.22
 --- !u!114 &4824473546259772769
 MonoBehaviour:
   m_ObjectHideFlags: 0
